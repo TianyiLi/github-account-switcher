@@ -1,7 +1,8 @@
 import { Close, Done, Edit } from '@mui/icons-material'
-import { Box, IconButton, TextField, Tooltip } from '@mui/material'
-import { useState } from 'react'
+import { Autocomplete, Box, IconButton, TextField, Tooltip } from '@mui/material'
+import { useEffect, useState } from 'react'
 import { Rule } from '../../services/rule'
+import accountService, { Account } from '../../services/account'
 
 function isValidRegex(regex: string) {
   try {
@@ -72,6 +73,12 @@ export default function RuleItem(props: Props) {
   const [urlPatternValidation, setUrlPatternValidation] = useState<string>()
   const [accountValidation, setAccountValidation] = useState<string>()
 
+  const [accounts, setAccounts] = useState<Account[]>([])
+
+  useEffect(() => {
+    accountService.getAll().then(setAccounts)
+  }, [])
+
   function handleEdit() {
     setIsEditing(true)
   }
@@ -106,15 +113,15 @@ export default function RuleItem(props: Props) {
     setRule({ ...rule, urlPattern: value })
   }
 
-  function handleAccountChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const value = event.target.value
+  function handleAccountChange(event: string) {
+    const value = event
     const { message } = validateAccount(value)
     setAccountValidation(message)
     setRule({ ...rule, account: value })
   }
 
   return (
-    <Box display="flex" gap={2} alignItems="flex-start">
+    <Box display="flex" gap={2} alignItems="flex-end">
       <Box flex="1">
         <TextField
           size="medium"
@@ -130,16 +137,23 @@ export default function RuleItem(props: Props) {
         />
       </Box>
       <Box width={150} flexShrink={0}>
-        <TextField
-          size="medium"
-          variant="standard"
-          fullWidth
-          placeholder="GitHub account"
-          error={!!accountValidation}
-          helperText={accountValidation}
-          value={rule.account}
-          onChange={handleAccountChange}
+        <Autocomplete
+          options={accounts.map(a => ({label: a.name}))}
+          disablePortal
           disabled={!isEditing}
+          placeholder="GitHub account"
+          value={{label: rule.account}}
+          onChange={(e, newV) => handleAccountChange(newV!.label)}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              size="medium"
+              variant="standard"
+              fullWidth
+              error={!!accountValidation}
+              helperText={accountValidation}
+            />
+          )}
         />
       </Box>
       <Box display="flex" flexShrink={0}>

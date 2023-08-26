@@ -3,8 +3,8 @@ import { deleteAsync } from 'del'
 import fs from 'fs/promises'
 import { join } from 'path'
 import AdmZip from 'adm-zip'
-
-const __dirname = new URL('.', import.meta.url).pathname
+import { fileURLToPath } from 'url';
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 // Convert Chrome manifest V3 to Firefox manifest V2
 async function buildFirefox() {
